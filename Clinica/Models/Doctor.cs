@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Globalization;
 using System.IO;
@@ -12,13 +13,8 @@ namespace Clinica.Models
     [Serializable]
     public class Doctor : Person
     {
-        public string Specialty { get; set; }
-        public double Salary { get; set; }
 
         private static readonly string FILE_NAME = "Doctor";
-
-        //[NonSerialized]
-        //private static readonly ISave<Doctor> serializer = new SaveXml<Doctor>(FILE_NAME);
 
         [NonSerialized]
         private static readonly ISave<Doctor> serializer = ISave<Doctor>.GetSerializer(SerializerOptions.BIN, FILE_NAME);
@@ -37,35 +33,8 @@ namespace Clinica.Models
             Salary = pDoctor.Salary;
         }
 
-        //private static void SaveList()
-        //{
-        //    FileStream fs = new FileStream(Utils.DB_PATH + FILE_NAME, FileMode.Create);
-
-        //    XmlSerializer xml = new XmlSerializer(typeof(List<Doctor>));
-
-        //    xml.Serialize(fs, doctors);
-
-        //    fs.Flush();
-        //    fs.Close();
-        //}
-
-        //private static void LoadList()
-        //{
-        //    if (File.Exists(Utils.DB_PATH + FILE_NAME))
-        //    {
-        //        FileStream fs = new FileStream(Utils.DB_PATH + FILE_NAME, FileMode.Open);
-
-        //        XmlSerializer xml = new XmlSerializer(typeof(List<Doctor>));
-
-        //        doctors = (List<Doctor>)xml.Deserialize(fs);
-
-        //        fs.Close();
-        //    }
-        //    else
-        //    {
-        //        doctors = new List<Doctor>();
-        //    }
-        //}
+        public string Specialty { get; set; }
+        public double Salary { get; set; }
 
         public Doctor() { }
 
@@ -101,36 +70,42 @@ namespace Clinica.Models
             if (result.Length != 0)
                 return result;
 
-            //result = base.Create();
-
-            //if (result.Length != 0)
-            //    return result;
-
-            //string cmdCreate = $"INSERT INTO doctor(iddoctor, specialty, salary) VALUES({IdPerson}, '{Specialty}', {Salary.ToString(CultureInfo.InvariantCulture)});";
-
-            //return ConnectionDB.GetInstance().Execute(cmdCreate);
-            try
+            if (Convert.ToBoolean(ConfigurationManager.AppSettings["useDB"].ToString()))
             {
-                doctors = serializer.LoadList();
+                result = base.Create();
 
-                if (doctors.Find((doctor) => doctor.IdPerson == IdPerson) == null)
-                {
-                    doctors.Add(this);
-                }
-                else
-                {
-                    result = "Id already used!\r\n";
-                }
+                if (result.Length != 0)
+                    return result;
 
-                serializer.SaveList(doctors);
+                string cmdCreate = $"INSERT INTO doctor(iddoctor, specialty, salary) VALUES({IdPerson}, '{Specialty}', {Salary.ToString(CultureInfo.InvariantCulture)});";
+
+                return ConnectionDB.GetInstance().Execute(cmdCreate);
             }
-            catch (Exception ex)
+            else
             {
+                try
+                {
+                    doctors = serializer.LoadList();
 
-                result = ex.Message;
+                    if (doctors.Find((doctor) => doctor.IdPerson == IdPerson) == null)
+                    {
+                        doctors.Add(this);
+                    }
+                    else
+                    {
+                        result = "Id already used!\r\n";
+                    }
+
+                    serializer.SaveList(doctors);
+                }
+                catch (Exception ex)
+                {
+
+                    result = ex.Message;
+                }
+
+                return result;
             }
-
-            return result;
         }
 
         public new string Read()
@@ -140,55 +115,61 @@ namespace Clinica.Models
             if (result.Length != 0)
                 return result;
 
-            //result = base.Read();
-
-            //if (result.Length != 0)
-            //    return result;
-
-            //string cmdRead = $"SELECT * FROM doctor WHERE iddoctor={IdPerson};";
-
-            //DataTable table = ConnectionDB.GetInstance().ExecuteQuery(cmdRead, out result);
-
-            //if (result.Length != 0)
-            //    return result;
-
-            //if (table.Rows.Count != 0)
-            //{
-            //    foreach(DataRow row in table.Rows)
-            //    {
-            //        Specialty = row["specialty"].ToString();
-            //        Salary = Convert.ToDouble(row["Salary"]);
-            //    }
-            //    result = "";
-            //}
-            //else
-            //{
-            //    result = "No results.\r\n";
-            //}
-
-            //return result;
-
-            try
+            if (Convert.ToBoolean(ConfigurationManager.AppSettings["useDB"].ToString()))
             {
-                doctors = serializer.LoadList();
+                result = base.Read();
 
-                Doctor auxDoctor = doctors.Find((doctor) => doctor.IdPerson == IdPerson);
+                if (result.Length != 0)
+                    return result;
 
-                if (auxDoctor == null)
+                string cmdRead = $"SELECT * FROM doctor WHERE iddoctor={IdPerson};";
+
+                DataTable table = ConnectionDB.GetInstance().ExecuteQuery(cmdRead, out result);
+
+                if (result.Length != 0)
+                    return result;
+
+                if (table.Rows.Count != 0)
                 {
-                    result = "No results\r\n";
+                    foreach (DataRow row in table.Rows)
+                    {
+                        Specialty = row["specialty"].ToString();
+                        Salary = Convert.ToDouble(row["Salary"]);
+                    }
+                    result = "";
                 }
                 else
                 {
-                    CopyDoctor(auxDoctor);
+                    result = "No results.\r\n";
                 }
-            }
-            catch (Exception ex)
-            {
-                result = ex.Message;
-            }
 
-            return result;
+                return result;
+            }
+            else
+            {
+                try
+                {
+                    doctors = serializer.LoadList();
+
+                    Doctor auxDoctor = doctors.Find((doctor) => doctor.IdPerson == IdPerson);
+
+                    if (auxDoctor == null)
+                    {
+                        result = "No results\r\n";
+                    }
+                    else
+                    {
+                        CopyDoctor(auxDoctor);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    result = ex.Message;
+                }
+
+                return result;
+
+            }
         }
 
         public new string Update()
@@ -198,116 +179,129 @@ namespace Clinica.Models
             if (result.Length != 0)
                 return result;
 
-            //result = base.Update();
-
-            //if (result.Length != 0)
-            //    return result;
-
-            //string cmdUpdate = $"UPDATE doctor SET specialty='{Specialty}', salary='{Salary.ToString(CultureInfo.InvariantCulture)}' WHERE iddoctor={IdPerson};";
-
-            //return ConnectionDB.GetInstance().Execute(cmdUpdate);
-
-            try
+            if (Convert.ToBoolean(ConfigurationManager.AppSettings["useDB"].ToString()))
             {
-                doctors = serializer.LoadList();
+                result = base.Update();
 
-                int index = doctors.FindIndex((doctor) => doctor.IdPerson == IdPerson);
+                if (result.Length != 0)
+                    return result;
 
-                if (index == -1)
-                {
-                    result = "Doctor not found";
-                }
-                else
-                {
-                    doctors[index] = this;
-                }
+                string cmdUpdate = $"UPDATE doctor SET specialty='{Specialty}', salary='{Salary.ToString(CultureInfo.InvariantCulture)}' WHERE iddoctor={IdPerson};";
 
-                serializer.SaveList(doctors);
+                return ConnectionDB.GetInstance().Execute(cmdUpdate);
             }
-            catch (Exception ex)
+            else
             {
+                try
+                {
+                    doctors = serializer.LoadList();
 
-                result = ex.Message;
+                    int index = doctors.FindIndex((doctor) => doctor.IdPerson == IdPerson);
+
+                    if (index == -1)
+                    {
+                        result = "Doctor not found";
+                    }
+                    else
+                    {
+                        doctors[index] = this;
+                    }
+
+                    serializer.SaveList(doctors);
+                }
+                catch (Exception ex)
+                {
+
+                    result = ex.Message;
+                }
+
+                return result;
             }
-
-            return result;
         }
 
         public new string Delete()
         {
             string result = Utils.ValidateId(IdPerson, "doctor");
 
-            //if (result.Length != 0)
-            //    return result;
-
-            //string cmdUpdate = $"DELETE FROM doctor WHERE iddoctor={IdPerson};";
-            //result = ConnectionDB.GetInstance().Execute(cmdUpdate);
-
-            //return base.Delete();
-
-            try
+            if (Convert.ToBoolean(ConfigurationManager.AppSettings["useDB"].ToString()))
             {
-                doctors = serializer.LoadList();
+                if (result.Length != 0)
+                    return result;
 
-                int index = doctors.FindIndex((doctor) => doctor.IdPerson == IdPerson);
+                string cmdUpdate = $"DELETE FROM doctor WHERE iddoctor={IdPerson};";
+                result = ConnectionDB.GetInstance().Execute(cmdUpdate);
 
-                if (index == -1)
-                {
-                    result = "Doctor not found";
-                }
-                else
-                {
-                    doctors.RemoveAt(index);
-                }
-
-                serializer.SaveList(doctors);
+                return base.Delete();
             }
-            catch (Exception ex)
+            else
             {
+                try
+                {
+                    doctors = serializer.LoadList();
 
-                result = ex.Message;
+                    int index = doctors.FindIndex((doctor) => doctor.IdPerson == IdPerson);
+
+                    if (index == -1)
+                    {
+                        result = "Doctor not found";
+                    }
+                    else
+                    {
+                        doctors.RemoveAt(index);
+                    }
+
+                    serializer.SaveList(doctors);
+                }
+                catch (Exception ex)
+                {
+
+                    result = ex.Message;
+                }
+
+                return result;
             }
-
-            return result;
         }
 
         public new static List<Doctor> Read(string pCondition)
         {
-            //List<Doctor> doctors = null;
-            //string result;
-
-            //string cmdRead = $"SELECT iddoctor FROM doctor INNER JOIN person ON iddoctor=idperson WHERE {pCondition};";
-
-
-
-            //DataTable table = ConnectionDB.GetInstance().ExecuteQuery(cmdRead, out result);
-
-            //if (result.Length != 0)
-            //    return doctors;
-
-            //doctors = new List<Doctor>();
-
-            //if (table.Rows.Count != 0)
-            //{
-            //    foreach (DataRow row in table.Rows)
-            //    {
-            //        doctors.Add(new Doctor(Convert.ToInt32(row["iddoctor"])));
-            //    }
-            //}
-
-            //return doctors;
-
-            try
+            if (Convert.ToBoolean(ConfigurationManager.AppSettings["useDB"].ToString()))
             {
-                doctors = serializer.LoadList();
+                List<Doctor> doctors = null;
+                string result;
+
+                string cmdRead = $"SELECT iddoctor FROM doctor INNER JOIN person ON iddoctor=idperson WHERE {pCondition};";
+
+                DataTable table = ConnectionDB.GetInstance().ExecuteQuery(cmdRead, out result);
+
+                if (result.Length != 0)
+                    return doctors;
+
+                doctors = new List<Doctor>();
+
+                if (table.Rows.Count != 0)
+                {
+                    foreach (DataRow row in table.Rows)
+                    {
+                        doctors.Add(new Doctor(Convert.ToInt32(row["iddoctor"])));
+                    }
+                }
+
+                return doctors;
             }
-            catch (Exception)
+            else
             {
-                doctors = null;
+                try
+                {
+                    doctors = serializer.LoadList();
+                }
+                catch (Exception)
+                {
+                    doctors = null;
+                }
+
+
+                return doctors;
             }
-
-
-            return doctors;
         }
     }
 }

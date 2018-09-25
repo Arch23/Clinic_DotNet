@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -27,7 +28,14 @@ namespace Clinica.Models
             ADoctor = pAppointment.ADoctor;
             APatient = pAppointment.APatient;
         }
-
+        
+        public int IdAppointment { get; set; }
+        public DateTime Date { get; set; }
+        public string Diagnosis { get; set; }
+        public string Prescription { get; set; }
+        private Doctor aDoctor;
+        private Patient aPatient;
+        
         public Appointment() { }
 
         public Appointment(int pId)
@@ -35,13 +43,6 @@ namespace Clinica.Models
             IdAppointment = pId;
             Read();
         }
-
-        public int IdAppointment { get; set; }
-        public DateTime Date { get; set; }
-        public string Diagnosis { get; set; }
-        public string Prescription { get; set; }
-        private Doctor aDoctor;
-        private Patient aPatient;
 
         public Doctor ADoctor
         {
@@ -75,31 +76,37 @@ namespace Clinica.Models
             if (result.Length != 0)
                 return result;
 
-            //string cmdCreate = $"INSERT INTO appointment(idappointment, diagnosis, prescription, date, iddoctor, idpatient) VALUES({IdAppointment}, '{Diagnosis}', '{Prescription}', '{Date.ToString("yyyy/MM/dd")}', {ADoctor.IdPerson}, {APatient.IdPerson});";
-
-            //return ConnectionDB.GetInstance().Execute(cmdCreate);
-
-            try
+            if (Convert.ToBoolean(ConfigurationManager.AppSettings["useDB"].ToString()))
             {
-                appointments = serializer.LoadList();
+                string cmdCreate = $"INSERT INTO appointment(idappointment, diagnosis, prescription, date, iddoctor, idpatient) VALUES({IdAppointment}, '{Diagnosis}', '{Prescription}', '{Date.ToString("yyyy/MM/dd")}', {ADoctor.IdPerson}, {APatient.IdPerson});";
 
-                if (appointments.Find((appointment) => appointment.IdAppointment == IdAppointment) == null)
-                {
-                    appointments.Add(this);
-                }
-                else
-                {
-                    result = "Id already used!\r\n";
-                }
-
-                serializer.SaveList(appointments);
+                return ConnectionDB.GetInstance().Execute(cmdCreate);
             }
-            catch (Exception ex)
+            else
             {
-                result = ex.Message;
-            }
 
-            return result;
+                try
+                {
+                    appointments = serializer.LoadList();
+
+                    if (appointments.Find((appointment) => appointment.IdAppointment == IdAppointment) == null)
+                    {
+                        appointments.Add(this);
+                    }
+                    else
+                    {
+                        result = "Id already used!\r\n";
+                    }
+
+                    serializer.SaveList(appointments);
+                }
+                catch (Exception ex)
+                {
+                    result = ex.Message;
+                }
+
+                return result;
+            }
         }
 
         public string Read()
@@ -109,51 +116,57 @@ namespace Clinica.Models
             if (result.Length != 0)
                 return result;
 
-            //string cmdRead = $"SELECT * FROM appointment WHERE idappointment={IdAppointment};";
-
-            //DataTable table = ConnectionDB.GetInstance().ExecuteQuery(cmdRead, out result);
-
-            //if (result.Length != 0)
-            //    return result;
-
-            //if (table.Rows.Count != 0)
-            //{
-            //    DataRow row = table.Rows[0];
-            //    Diagnosis = row["diagnosis"].ToString();
-            //    Prescription = row["prescription"].ToString();
-            //    ADoctor = new Doctor(Convert.ToInt32(row["iddoctor"]));
-            //    APatient = new Patient(Convert.ToInt32(row["idpatient"]));
-            //    Date = Convert.ToDateTime(row["date"]);
-            //    result = "";
-            //}
-            //else
-            //{
-            //    result = "No results.\r\n";
-            //}
-
-            //return result;
-
-            try
+            if (Convert.ToBoolean(ConfigurationManager.AppSettings["useDB"].ToString()))
             {
-                appointments = serializer.LoadList();
+                string cmdRead = $"SELECT * FROM appointment WHERE idappointment={IdAppointment};";
 
-                Appointment auxAppointment = appointments.Find((appointment) => appointment.IdAppointment == IdAppointment);
+                DataTable table = ConnectionDB.GetInstance().ExecuteQuery(cmdRead, out result);
 
-                if (auxAppointment == null)
+                if (result.Length != 0)
+                    return result;
+
+                if (table.Rows.Count != 0)
                 {
-                    result = "No results\r\n";
+                    DataRow row = table.Rows[0];
+                    Diagnosis = row["diagnosis"].ToString();
+                    Prescription = row["prescription"].ToString();
+                    ADoctor = new Doctor(Convert.ToInt32(row["iddoctor"]));
+                    APatient = new Patient(Convert.ToInt32(row["idpatient"]));
+                    Date = Convert.ToDateTime(row["date"]);
+                    result = "";
                 }
                 else
                 {
-                    CopyAppointment(auxAppointment);
+                    result = "No results.\r\n";
                 }
-            }
-            catch (Exception ex)
-            {
-                result = ex.Message;
-            }
 
-            return result;
+                return result;
+            }
+            else
+            {
+
+                try
+                {
+                    appointments = serializer.LoadList();
+
+                    Appointment auxAppointment = appointments.Find((appointment) => appointment.IdAppointment == IdAppointment);
+
+                    if (auxAppointment == null)
+                    {
+                        result = "No results\r\n";
+                    }
+                    else
+                    {
+                        CopyAppointment(auxAppointment);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    result = ex.Message;
+                }
+
+                return result;
+            }
         }
 
         public string Update()
@@ -163,33 +176,39 @@ namespace Clinica.Models
             if (result.Length != 0)
                 return result;
 
-            //string cmdUpdate = $"UPDATE appointment SET diagnosis='{Diagnosis}', prescription='{Prescription}', date='{Date.ToString("yyyy/MM/dd")}', iddoctor={ADoctor.IdPerson}, idpatient={APatient.IdPerson} WHERE idappointment={IdAppointment};";
-
-            //return ConnectionDB.GetInstance().Execute(cmdUpdate);
-
-            try
+            if (Convert.ToBoolean(ConfigurationManager.AppSettings["useDB"].ToString()))
             {
-                appointments = serializer.LoadList();
+                string cmdUpdate = $"UPDATE appointment SET diagnosis='{Diagnosis}', prescription='{Prescription}', date='{Date.ToString("yyyy/MM/dd")}', iddoctor={ADoctor.IdPerson}, idpatient={APatient.IdPerson} WHERE idappointment={IdAppointment};";
 
-                int index = appointments.FindIndex((appointment) => appointment.IdAppointment == IdAppointment);
-
-                if (index == -1)
-                {
-                    result = "Appointment not found";
-                }
-                else
-                {
-                    appointments[index] = this;
-                }
-
-                serializer.SaveList(appointments);
+                return ConnectionDB.GetInstance().Execute(cmdUpdate);
             }
-            catch (Exception ex)
+            else
             {
-                result = ex.Message;
-            }
 
-            return result;
+                try
+                {
+                    appointments = serializer.LoadList();
+
+                    int index = appointments.FindIndex((appointment) => appointment.IdAppointment == IdAppointment);
+
+                    if (index == -1)
+                    {
+                        result = "Appointment not found";
+                    }
+                    else
+                    {
+                        appointments[index] = this;
+                    }
+
+                    serializer.SaveList(appointments);
+                }
+                catch (Exception ex)
+                {
+                    result = ex.Message;
+                }
+
+                return result;
+            }
         }
 
         public string Delete()
@@ -199,69 +218,80 @@ namespace Clinica.Models
             if (result.Length != 0)
                 return result;
 
-            //string cmdDelete = $"DELETE FROM appointment WHERE idappointment={IdAppointment};";
-
-            //return ConnectionDB.GetInstance().Execute(cmdDelete);
-            try
+            if (Convert.ToBoolean(ConfigurationManager.AppSettings["useDB"].ToString()))
             {
-                appointments = serializer.LoadList();
+                string cmdDelete = $"DELETE FROM appointment WHERE idappointment={IdAppointment};";
 
-                int index = appointments.FindIndex((appointment) => appointment.IdAppointment == IdAppointment);
-
-                if (index == -1)
-                {
-                    result = "Appointment not found";
-                }
-                else
-                {
-                    appointments.RemoveAt(index);
-                }
-
-                serializer.SaveList(appointments);
+                return ConnectionDB.GetInstance().Execute(cmdDelete);
             }
-            catch (Exception ex)
+            else
             {
-                result = ex.Message;
-            }
+                try
+                {
+                    appointments = serializer.LoadList();
 
-            return result;
+                    int index = appointments.FindIndex((appointment) => appointment.IdAppointment == IdAppointment);
+
+                    if (index == -1)
+                    {
+                        result = "Appointment not found";
+                    }
+                    else
+                    {
+                        appointments.RemoveAt(index);
+                    }
+
+                    serializer.SaveList(appointments);
+                }
+                catch (Exception ex)
+                {
+                    result = ex.Message;
+                }
+
+                return result;
+            }
         }
 
         public static List<Appointment> Read(string pCondition)
         {
-            //List<Appointment> appointments = null;
-
-            //string cmdRead = $"SELECT idappointment FROM appointment WHERE {pCondition};";
-            //string result;
-
-            //DataTable table = ConnectionDB.GetInstance().ExecuteQuery(cmdRead, out result);
-
-            //if (result.Length != 0)
-            //    return appointments;
-
-            //appointments = new List<Appointment>();
-
-            //if (table.Rows.Count != 0)
-            //{
-            //    foreach(DataRow row in table.Rows)
-            //    {
-            //        appointments.Add(new Appointment(Convert.ToInt32(row["idappointment"])));
-            //    }
-            //}
-
-            //return appointments;
-
-            try
+            if (Convert.ToBoolean(ConfigurationManager.AppSettings["useDB"].ToString()))
             {
-                appointments = serializer.LoadList();
+                List<Appointment> appointments = null;
+
+                string cmdRead = $"SELECT idappointment FROM appointment WHERE {pCondition};";
+                string result;
+
+                DataTable table = ConnectionDB.GetInstance().ExecuteQuery(cmdRead, out result);
+
+                if (result.Length != 0)
+                    return appointments;
+
+                appointments = new List<Appointment>();
+
+                if (table.Rows.Count != 0)
+                {
+                    foreach (DataRow row in table.Rows)
+                    {
+                        appointments.Add(new Appointment(Convert.ToInt32(row["idappointment"])));
+                    }
+                }
+
+                return appointments;
             }
-            catch (Exception)
+            else
             {
-                appointments = null;
+                try
+                {
+                    appointments = serializer.LoadList();
+                }
+                catch (Exception)
+                {
+                    appointments = null;
+                }
+
+
+                return appointments;
             }
-
-
-            return appointments;
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Clinica
     {
         protected readonly string fileName;
 
-        //Factory method
+        //Factory
         public static ISave<T> GetSerializer(SerializerOptions pOptions, string pFileName)
         {
             ISave<T> serializer;

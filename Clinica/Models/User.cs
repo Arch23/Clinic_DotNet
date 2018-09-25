@@ -1,6 +1,8 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
 
 namespace Clinica.Models
 {
@@ -46,39 +48,43 @@ namespace Clinica.Models
 
             if (result.Length != 0)
                 return result;
-
-            //string cmdCheck = $"SELECT iduser FROM user WHERE login='{Login}';";
-
-            //DataTable table = ConnectionDB.GetInstance().ExecuteQuery(cmdCheck, out result);
-
-            //if (result.Length != 0)
-            //    return result;
-
-            //if (table.Rows.Count!=0)
-            //    return "User with that login already exists!\r\n";
-
-            //string cmdCreate = $"INSERT INTO user(login, password) VALUES('{Login}', '{Password}');";
-
-            //return ConnectionDB.GetInstance().Execute(cmdCreate);
-
-            try
+            if (Convert.ToBoolean(ConfigurationManager.AppSettings["useDB"].ToString()))
             {
-                users = serializer.LoadList();
+                string cmdCheck = $"SELECT iduser FROM user WHERE login='{Login}';";
 
-                if (users.Find((user) => user.Login.Equals(Login)) != null)
+                DataTable table = ConnectionDB.GetInstance().ExecuteQuery(cmdCheck, out result);
+
+                if (result.Length != 0)
+                    return result;
+
+                if (table.Rows.Count != 0)
                     return "User with that login already exists!\r\n";
 
-                users.Add(this);
+                string cmdCreate = $"INSERT INTO user(login, password) VALUES('{Login}', '{Password}');";
 
-                serializer.SaveList(users);
+                return ConnectionDB.GetInstance().Execute(cmdCreate);
             }
-            catch (Exception ex)
+            else
             {
+                try
+                {
+                    users = serializer.LoadList();
 
-                result = ex.Message;
+                    if (users.Find((user) => user.Login.Equals(Login)) != null)
+                        return "User with that login already exists!\r\n";
+
+                    users.Add(this);
+
+                    serializer.SaveList(users);
+                }
+                catch (Exception ex)
+                {
+
+                    result = ex.Message;
+                }
+
+                return result;
             }
-
-            return result;
         }
 
         public string Logon()
@@ -87,48 +93,52 @@ namespace Clinica.Models
 
             if (result.Length != 0)
                 return result;
-
-            ////verify if user exists
-            //string cmd = $"SELECT * FROM user WHERE login='{Login}';";
-
-            //DataTable table = ConnectionDB.GetInstance().ExecuteQuery(cmd, out result);
-
-            //if (result.Length != 0)
-            //    return result;
-
-            //if (table.Rows.Count != 0)
-            //{
-            //    //verify user password
-            //    if (table.Rows[0]["password"].ToString().Equals(Password))
-            //        result = "";
-            //    else
-            //        result = "Wrong password!\r\n";
-            //}
-            //else
-            //{
-            //    result = "No user with that login found!\r\n";
-            //}
-
-            //return result;
-
-            try
+            if (Convert.ToBoolean(ConfigurationManager.AppSettings["useDB"].ToString()))
             {
-                users = serializer.LoadList();
+                //verify if user exists
+                string cmd = $"SELECT * FROM user WHERE login='{Login}';";
 
-                User auxUser = users.Find((user) => user.Login.Equals(Login));
+                DataTable table = ConnectionDB.GetInstance().ExecuteQuery(cmd, out result);
 
-                if (auxUser == null)
-                    return "No user with that login found!\r\n";
+                if (result.Length != 0)
+                    return result;
 
-                if (!auxUser.Password.Equals(Password))
-                    return "Wrong password!\r\n";
+                if (table.Rows.Count != 0)
+                {
+                    //verify user password
+                    if (table.Rows[0]["password"].ToString().Equals(Password))
+                        result = "";
+                    else
+                        result = "Wrong password!\r\n";
+                }
+                else
+                {
+                    result = "No user with that login found!\r\n";
+                }
+
+                return result;
             }
-            catch (Exception ex)
+            else
             {
-                result = ex.Message;
-            }
+                try
+                {
+                    users = serializer.LoadList();
 
-            return result;
+                    User auxUser = users.Find((user) => user.Login.Equals(Login));
+
+                    if (auxUser == null)
+                        return "No user with that login found!\r\n";
+
+                    if (!auxUser.Password.Equals(Password))
+                        return "Wrong password!\r\n";
+                }
+                catch (Exception ex)
+                {
+                    result = ex.Message;
+                }
+
+                return result;
+            }
         }
     }
 }

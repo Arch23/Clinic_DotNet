@@ -11,7 +11,7 @@ namespace Clinica
     public static class Encryption
     {
         private static readonly byte[] KEY =
-        System.Text.Encoding.UTF8.GetBytes(ConfigurationManager.ConnectionStrings["encryptKey"].ToString());
+        System.Text.Encoding.UTF8.GetBytes(ConfigurationManager.AppSettings["encryptKey"].ToString());
 
         private static readonly byte[] IV = KEY;
 
