@@ -1,0 +1,41 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Template.master.cs" Inherits="Clinica.Pages.Template" %>
+
+<!DOCTYPE html>
+
+<html>
+<head runat="server">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Clinic</title>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:100,200,300,400,500" rel="stylesheet">
+    <link href="styles/common.css" rel="stylesheet" />
+    <link href="styles/Template.css" rel="stylesheet" />
+    <asp:ContentPlaceHolder ID="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <header>
+            <div class="logo">
+                <h1>TSC Clinic</h1>
+            </div>
+            <nav>
+                <a href="RegPatient.aspx">Patient</a>
+                <a href="RegDoctor.aspx">Doctor</a>
+                <a href="RegAppointment.aspx">Appointment</a>
+                <asp:Button CssClass="btn-logout" ID="btnLogout" runat="server" Text="logout" OnClick="btnLogout_Click" />
+            </nav>
+        </header>
+        <div class="template-box">
+            <div class="template-header">
+                <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+                </asp:ContentPlaceHolder>
+            </div>
+            <div class="template-body">
+                <asp:ContentPlaceHolder ID="ContentPlaceHolder2" runat="server">
+                </asp:ContentPlaceHolder>
+            </div>
+        </div>
+    </form>
+    <script src="js/Template.js"></script>
+</body>
+</html>

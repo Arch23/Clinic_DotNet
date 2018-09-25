@@ -1,0 +1,33 @@
+﻿.content-box .login-component:not(:first-child) {
+    margin-top: 20px;
+}
+
+.login-component > * {
+        display: block;
+    }
+
+.login-labels {
+    font-size: 1.4em;
+    font-weight: 400;
+}
+
+.login-btns > * {
+    margin: 0 auto;
+}
+
+.btn {
+    min-width: 200px;
+}
+
+.btn-text-only {
+    margin-top: 10px;
+}
+
+.login-checkbox input[type=checkbox]{
+    margin-right: 20px;
+}
+
+.login-checkbox > *{
+    display: inline-block;
+
+}
