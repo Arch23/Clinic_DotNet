@@ -8,12 +8,9 @@ namespace Clinica.Models
     public class User
     {
         private static readonly string FILE_NAME = "User";
-        
-        //[NonSerialized]
-        //private static readonly ISave<User> serializer = new SaveXml<User>(FILE_NAME);
 
         [NonSerialized]
-        private static readonly ISave<User> serializer = new SaveBin<User>(FILE_NAME);
+        private static readonly ISave<User> serializer = ISave<User>.GetSerializer(SerializerOptions.BIN, FILE_NAME);
 
         [NonSerialized]
         private static List<User> users;
@@ -24,36 +21,6 @@ namespace Clinica.Models
             Login = pUser.Login;
             Password = pUser.Password;
         }
-
-        //private static void SaveList()
-        //{
-        //    FileStream fs = new FileStream(Utils.DB_PATH + FILE_NAME, FileMode.Create);
-
-        //    XmlSerializer xml = new XmlSerializer(typeof(List<User>));
-
-        //    xml.Serialize(fs, users);
-
-        //    fs.Flush();
-        //    fs.Close();
-        //}
-
-        //private static void LoadList()
-        //{
-        //    if (File.Exists(Utils.DB_PATH + FILE_NAME))
-        //    {
-        //        FileStream fs = new FileStream(Utils.DB_PATH + FILE_NAME, FileMode.Open);
-
-        //        XmlSerializer xml = new XmlSerializer(typeof(List<User>));
-
-        //        users = (List<User>)xml.Deserialize(fs);
-
-        //        fs.Close();
-        //    }
-        //    else
-        //    {
-        //        users = new List<User>();
-        //    }
-        //}
 
         public int IdUser { get; set; }
         public string Login { get; set; }

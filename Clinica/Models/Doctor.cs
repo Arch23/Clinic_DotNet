@@ -21,7 +21,7 @@ namespace Clinica.Models
         //private static readonly ISave<Doctor> serializer = new SaveXml<Doctor>(FILE_NAME);
 
         [NonSerialized]
-        private static readonly ISave<Doctor> serializer = new SaveBin<Doctor>(FILE_NAME);
+        private static readonly ISave<Doctor> serializer = ISave<Doctor>.GetSerializer(SerializerOptions.BIN, FILE_NAME);
 
         [NonSerialized]
         private static List<Doctor> doctors;

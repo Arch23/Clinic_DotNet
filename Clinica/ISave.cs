@@ -9,7 +9,28 @@ namespace Clinica
     {
         protected readonly string fileName;
 
-        public ISave(string pFileName) {
+        //Factory method
+        public static ISave<T> GetSerializer(SerializerOptions pOptions, string pFileName)
+        {
+            ISave<T> serializer;
+
+            switch (pOptions)
+            {
+                case SerializerOptions.BIN:
+                    serializer = new SaveBin<T>(pFileName);
+                    break;
+                case SerializerOptions.XML:
+                    serializer = new SaveXml<T>(pFileName);
+                    break;
+                default:
+                    serializer = null;
+                    break;
+            }
+
+            return serializer;
+        }
+
+        protected ISave(string pFileName) {
             fileName = pFileName;
         }
 

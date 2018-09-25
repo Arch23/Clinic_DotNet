@@ -19,12 +19,9 @@ namespace Clinica.Models
         public string Zipcode { get; set; }
 
         private static readonly string FILE_NAME = "People";
-        
-        //[NonSerialized]
-        //private static readonly ISave<Person> serializer = new SaveXml<Person>(FILE_NAME);
 
         [NonSerialized]
-        private static readonly ISave<Person> serializer = new SaveBin<Person>(FILE_NAME);
+        private static readonly ISave<Person> serializer = ISave<Person>.GetSerializer(SerializerOptions.BIN, FILE_NAME);
 
         [NonSerialized]
         private static List<Person> people;

@@ -13,11 +13,8 @@ namespace Clinica.Models
     {
         private static readonly string FILE_NAME = "Appointment";
 
-        //[NonSerialized]
-        //private static readonly ISave<Appointment> serializer = new SaveXml<Appointment>(FILE_NAME);
-
         [NonSerialized]
-        private static readonly ISave<Appointment> serializer = new SaveBin<Appointment>(FILE_NAME);
+        private static readonly ISave<Appointment> serializer = ISave<Appointment>.GetSerializer(SerializerOptions.BIN, FILE_NAME);
 
         [NonSerialized]
         private static List<Appointment> appointments;
