@@ -109,18 +109,26 @@ namespace Clinica.Models
             //string cmdCreate = $"INSERT INTO doctor(iddoctor, specialty, salary) VALUES({IdPerson}, '{Specialty}', {Salary.ToString(CultureInfo.InvariantCulture)});";
 
             //return ConnectionDB.GetInstance().Execute(cmdCreate);
-            doctors = serializer.LoadList();
-
-            if (doctors.Find((doctor) => doctor.IdPerson == IdPerson) == null)
+            try
             {
-                doctors.Add(this);
-            }
-            else
-            {
-                result = "Id already used!\r\n";
-            }
+                doctors = serializer.LoadList();
 
-            serializer.SaveList(doctors);
+                if (doctors.Find((doctor) => doctor.IdPerson == IdPerson) == null)
+                {
+                    doctors.Add(this);
+                }
+                else
+                {
+                    result = "Id already used!\r\n";
+                }
+
+                serializer.SaveList(doctors);
+            }
+            catch (Exception ex)
+            {
+
+                result = ex.Message;
+            }
 
             return result;
         }
@@ -160,17 +168,24 @@ namespace Clinica.Models
 
             //return result;
 
-            doctors = serializer.LoadList();
-
-            Doctor auxDoctor = doctors.Find((doctor) => doctor.IdPerson == IdPerson);
-
-            if (auxDoctor == null)
+            try
             {
-                result = "No results\r\n";
+                doctors = serializer.LoadList();
+
+                Doctor auxDoctor = doctors.Find((doctor) => doctor.IdPerson == IdPerson);
+
+                if (auxDoctor == null)
+                {
+                    result = "No results\r\n";
+                }
+                else
+                {
+                    CopyDoctor(auxDoctor);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                CopyDoctor(auxDoctor);
+                result = ex.Message;
             }
 
             return result;
@@ -192,20 +207,28 @@ namespace Clinica.Models
 
             //return ConnectionDB.GetInstance().Execute(cmdUpdate);
 
-            doctors = serializer.LoadList();
-
-            int index = doctors.FindIndex((doctor) => doctor.IdPerson == IdPerson);
-
-            if (index == -1)
+            try
             {
-                result = "Doctor not found";
-            }
-            else
-            {
-                doctors[index] = this;
-            }
+                doctors = serializer.LoadList();
 
-            serializer.SaveList(doctors);
+                int index = doctors.FindIndex((doctor) => doctor.IdPerson == IdPerson);
+
+                if (index == -1)
+                {
+                    result = "Doctor not found";
+                }
+                else
+                {
+                    doctors[index] = this;
+                }
+
+                serializer.SaveList(doctors);
+            }
+            catch (Exception ex)
+            {
+
+                result = ex.Message;
+            }
 
             return result;
         }
@@ -222,20 +245,28 @@ namespace Clinica.Models
 
             //return base.Delete();
 
-            doctors = serializer.LoadList();
-
-            int index = doctors.FindIndex((doctor) => doctor.IdPerson == IdPerson);
-
-            if (index == -1)
+            try
             {
-                result = "Doctor not found";
-            }
-            else
-            {
-                doctors.RemoveAt(index);
-            }
+                doctors = serializer.LoadList();
 
-            serializer.SaveList(doctors);
+                int index = doctors.FindIndex((doctor) => doctor.IdPerson == IdPerson);
+
+                if (index == -1)
+                {
+                    result = "Doctor not found";
+                }
+                else
+                {
+                    doctors.RemoveAt(index);
+                }
+
+                serializer.SaveList(doctors);
+            }
+            catch (Exception ex)
+            {
+
+                result = ex.Message;
+            }
 
             return result;
         }
@@ -266,7 +297,15 @@ namespace Clinica.Models
 
             //return doctors;
 
-            doctors = serializer.LoadList();
+            try
+            {
+                doctors = serializer.LoadList();
+            }
+            catch (Exception)
+            {
+                doctors = null;
+            }
+
 
             return doctors;
         }

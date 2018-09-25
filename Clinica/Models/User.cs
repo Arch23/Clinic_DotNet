@@ -94,14 +94,22 @@ namespace Clinica.Models
 
             //return ConnectionDB.GetInstance().Execute(cmdCreate);
 
-            users = serializer.LoadList();
+            try
+            {
+                users = serializer.LoadList();
 
-            if (users.Find((user) => user.Login.Equals(Login)) != null)
-                return "User with that login already exists!\r\n";
+                if (users.Find((user) => user.Login.Equals(Login)) != null)
+                    return "User with that login already exists!\r\n";
 
-            users.Add(this);
+                users.Add(this);
 
-            serializer.SaveList(users);
+                serializer.SaveList(users);
+            }
+            catch (Exception ex)
+            {
+
+                result = ex.Message;
+            }
 
             return result;
         }
@@ -136,15 +144,22 @@ namespace Clinica.Models
 
             //return result;
 
-            users = serializer.LoadList();
+            try
+            {
+                users = serializer.LoadList();
 
-            User auxUser = users.Find((user) => user.Login.Equals(Login));
+                User auxUser = users.Find((user) => user.Login.Equals(Login));
 
-            if (auxUser == null)
-                return "No user with that login found!\r\n";
+                if (auxUser == null)
+                    return "No user with that login found!\r\n";
 
-            if (!auxUser.Password.Equals(Password))
-                return "Wrong password!\r\n";
+                if (!auxUser.Password.Equals(Password))
+                    return "Wrong password!\r\n";
+            }
+            catch (Exception ex)
+            {
+                result = ex.Message;
+            }
 
             return result;
         }

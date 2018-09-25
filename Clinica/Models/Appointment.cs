@@ -82,18 +82,25 @@ namespace Clinica.Models
 
             //return ConnectionDB.GetInstance().Execute(cmdCreate);
 
-            appointments = serializer.LoadList();
-
-            if (appointments.Find((appointment) => appointment.IdAppointment == IdAppointment) == null)
+            try
             {
-                appointments.Add(this);
-            }
-            else
-            {
-                result = "Id already used!\r\n";
-            }
+                appointments = serializer.LoadList();
 
-            serializer.SaveList(appointments);
+                if (appointments.Find((appointment) => appointment.IdAppointment == IdAppointment) == null)
+                {
+                    appointments.Add(this);
+                }
+                else
+                {
+                    result = "Id already used!\r\n";
+                }
+
+                serializer.SaveList(appointments);
+            }
+            catch (Exception ex)
+            {
+                result = ex.Message;
+            }
 
             return result;
         }
@@ -129,17 +136,24 @@ namespace Clinica.Models
 
             //return result;
 
-            appointments = serializer.LoadList();
-
-            Appointment auxAppointment = appointments.Find((appointment) => appointment.IdAppointment == IdAppointment);
-
-            if (auxAppointment == null)
+            try
             {
-                result = "No results\r\n";
+                appointments = serializer.LoadList();
+
+                Appointment auxAppointment = appointments.Find((appointment) => appointment.IdAppointment == IdAppointment);
+
+                if (auxAppointment == null)
+                {
+                    result = "No results\r\n";
+                }
+                else
+                {
+                    CopyAppointment(auxAppointment);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                CopyAppointment(auxAppointment);
+                result = ex.Message;
             }
 
             return result;
@@ -156,20 +170,27 @@ namespace Clinica.Models
 
             //return ConnectionDB.GetInstance().Execute(cmdUpdate);
 
-            appointments = serializer.LoadList();
-
-            int index = appointments.FindIndex((appointment) => appointment.IdAppointment == IdAppointment);
-
-            if (index == -1)
+            try
             {
-                result = "Appointment not found";
-            }
-            else
-            {
-                appointments[index] = this;
-            }
+                appointments = serializer.LoadList();
 
-            serializer.SaveList(appointments);
+                int index = appointments.FindIndex((appointment) => appointment.IdAppointment == IdAppointment);
+
+                if (index == -1)
+                {
+                    result = "Appointment not found";
+                }
+                else
+                {
+                    appointments[index] = this;
+                }
+
+                serializer.SaveList(appointments);
+            }
+            catch (Exception ex)
+            {
+                result = ex.Message;
+            }
 
             return result;
         }
@@ -184,21 +205,27 @@ namespace Clinica.Models
             //string cmdDelete = $"DELETE FROM appointment WHERE idappointment={IdAppointment};";
 
             //return ConnectionDB.GetInstance().Execute(cmdDelete);
-
-            appointments = serializer.LoadList();
-
-            int index = appointments.FindIndex((appointment) => appointment.IdAppointment == IdAppointment);
-
-            if (index == -1)
+            try
             {
-                result = "Appointment not found";
-            }
-            else
-            {
-                appointments.RemoveAt(index);
-            }
+                appointments = serializer.LoadList();
 
-            serializer.SaveList(appointments);
+                int index = appointments.FindIndex((appointment) => appointment.IdAppointment == IdAppointment);
+
+                if (index == -1)
+                {
+                    result = "Appointment not found";
+                }
+                else
+                {
+                    appointments.RemoveAt(index);
+                }
+
+                serializer.SaveList(appointments);
+            }
+            catch (Exception ex)
+            {
+                result = ex.Message;
+            }
 
             return result;
         }
@@ -227,7 +254,15 @@ namespace Clinica.Models
 
             //return appointments;
 
-            appointments = serializer.LoadList();
+            try
+            {
+                appointments = serializer.LoadList();
+            }
+            catch (Exception)
+            {
+                appointments = null;
+            }
+
 
             return appointments;
         }
